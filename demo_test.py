@@ -13,7 +13,7 @@ import cv2
 
 from visual_api.models import Classification
 import visual_api.launchers as launchers
-from visual_api.common import NetworkInfo
+from visual_api.common import NetworkInfo, open_images_capture, resolution
 
 log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.DEBUG, stream=sys.stdout)
 
@@ -41,21 +41,19 @@ def build_argparser():
                                    help='Optional. Model inputs layouts. '
                                         'Ex. NCHW or input0:NCHW,input1:NC in case of more than one input.')
 
-    # io_args = parser.add_argument_group('Input/output options')
-    # io_args.add_argument('--loop', default=False, action='store_true',
-    #                      help='Optional. Enable reading the input in a loop.')
-    # io_args.add_argument('-o', '--output', required=False,
-    #                      help='Optional. Name of the output file(s) to save.')
-    # io_args.add_argument('-limit', '--output_limit', required=False, default=1000, type=int,
-    #                      help='Optional. Number of frames to store in output. '
-    #                           'If 0 is set, all frames are stored.')
-    # io_args.add_argument('--no_show', help="Optional. Don't show output.", action='store_true')
-    # io_args.add_argument('--output_resolution', default=None, type=resolution,
-    #                      help='Optional. Specify the maximum output window resolution '
-    #                           'in (width x height) format. Example: 1280x720. '
-    #                           'Input frame size used by default.')
-    # io_args.add_argument('-u', '--utilization_monitors', default='', type=str,
-    #                      help='Optional. List of monitors to show initially.')
+    io_args = parser.add_argument_group('Input/output options')
+    io_args.add_argument('--loop', default=False, action='store_true',
+                         help='Optional. Enable reading the input in a loop.')
+    io_args.add_argument('-o', '--output', required=False,
+                         help='Optional. Name of the output file(s) to save.')
+    io_args.add_argument('-limit', '--output_limit', required=False, default=1000, type=int,
+                         help='Optional. Number of frames to store in output. '
+                              'If 0 is set, all frames are stored.')
+    io_args.add_argument('--no_show', help="Optional. Don't show output.", action='store_true')
+    io_args.add_argument('--output_resolution', default=None, type=resolution,
+                         help='Optional. Specify the maximum output window resolution '
+                              'in (width x height) format. Example: 1280x720. '
+                              'Input frame size used by default.')
 
     input_transform_args = parser.add_argument_group('Input transform options')
     input_transform_args.add_argument('--reverse_input_channels', default=False, action='store_true',
@@ -129,8 +127,8 @@ def print_raw_results(classifications, frame_id):
 def main():
     args = build_argparser().parse_args()
 
-    # cap = open_images_capture(args.input, args.loop)
-    # delay = int(cap.get_type() in {'VIDEO', 'CAMERA'})
+    cap = open_images_capture(args.input, args.loop)
+    delay = int(cap.get_type() in {'VIDEO', 'CAMERA'})
 
     # create launcher
     launcher = launchers.create_launcher_by_model_path(args.model)

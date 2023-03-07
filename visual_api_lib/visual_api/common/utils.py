@@ -23,3 +23,12 @@ class InputTransform:
 def softmax(logits, axis=None, keepdims=False):
     exp = np.exp(logits - np.max(logits))
     return exp / np.sum(exp, axis=axis, keepdims=keepdims)
+
+def resolution(value):
+    try:
+        result = [int(v) for v in value.split('x')]
+        if len(result) != 2:
+            raise RuntimeError('Correct format of --output_resolution parameter is "width"x"height".')
+    except ValueError:
+        raise RuntimeError('Correct format of --output_resolution parameter is "width"x"height".')
+    return result
