@@ -196,19 +196,6 @@ class Model:
                     len(self.outputs), ', '.join(self.outputs)
                 ))
 
-    def __call__(self, inputs):
-        '''
-        Applies preprocessing, synchronous inference, postprocessing routines while one call.
-        Args:
-            inputs: raw input data, the data type is defined by wrapper
-        Returns:
-            - postprocessed data in the format defined by wrapper
-            - the input metadata obtained from `preprocess` method
-        '''
-        dict_data, input_meta = self.preprocess(inputs)
-        raw_result = self.infer_sync(dict_data)
-        return self.postprocess(raw_result, input_meta), input_meta
-
     def log_layers_info(self):
         '''Prints the shape, precision and layout for all model inputs/outputs.
         '''

@@ -5,6 +5,7 @@
 
 import abc
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, List, Set
 
 
@@ -12,6 +13,7 @@ from typing import Dict, List, Set
 class Metadata:
     names: Set[str] = field(default_factory=set)
     shape: List[int] = field(default_factory=list)
+    index: int = 0
     layout: str = ''
     precision: str = ''
     type: str = ''
@@ -28,6 +30,7 @@ class BaseLauncher(metaclass=abc.ABCMeta):
         - Synchronous model inference
     '''
     precisions = ('FP32', 'I32', 'FP16', 'I16', 'I8', 'U8')
+    __provider__ = "base"
 
     @abc.abstractmethod
     def __init__(self):
@@ -95,3 +98,31 @@ class BaseLauncher(metaclass=abc.ABCMeta):
                     ...
                 }
         '''
+
+def get_all_launchers(cls):
+    all_launchers = []
+
+    for subclass in cls.__subclasses__():
+        all_launchers.append(subclass)
+        all_launchers.extend(get_all_launchers(subclass))
+
+    return all_launchers
+
+def get_launcher_by_name(name):
+    launchers = get_all_launchers(BaseLauncher)
+    for launcher in launchers:
+        if launcher.__provider__ == name:
+            return launcher
+
+PRETRAINED_FILES_MAP = {
+    "onnx": ["onnx"],
+    "tflite": ["tflite"],
+    "openvino": ["xml"],
+    "pytorch": ["pth", "pt"]
+}
+
+def create_launcher_by_model_path(model_path: Path):
+    for launcher, file_extensions in PRETRAINED_FILES_MAP.items():
+        if model_path.suffix in file_extensions:
+            return get_launcher_by_name(launcher)(model_path)
+

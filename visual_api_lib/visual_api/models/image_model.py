@@ -4,8 +4,7 @@
 """
 
 from .base_model import Model
-from .types import BooleanValue, ListValue, StringValue
-from .utils import RESIZE_TYPES, pad_image, InputTransform
+from ..common import NetworkInfo, BooleanValue, ListValue, StringValue, RESIZE_TYPES, InputTransform, pad_image
 
 
 class ImageModel(Model):
@@ -25,19 +24,17 @@ class ImageModel(Model):
         input_transform (InputTransform): instance of the `InputTransform` for image normalization
     '''
 
-    def __init__(self, model_adapter, configuration=None, preload=False):
+    def __init__(self, network_info: NetworkInfo, configuration=None):
         '''Image model constructor
         It extends the `Model` constructor.
         Args:
-            model_adapter (ModelAdapter): allows working with the specified executor
+            network_info (NetworkInfo): it contains information about inputs and outputs of model
             configuration (dict, optional): it contains values for parameters accepted by specific
               wrapper (`confidence_threshold`, `labels` etc.) which are set as data attributes
-            preload (bool, optional): a flag whether the model is loaded to device while
-              initialization. If `preload=False`, the model must be loaded via `load` method before inference
         Raises:
-            WrapperError: if the wrapper failed to define appropriate inputs for images
+            WrapperError: if the wrapper configuration is incorrect
         '''
-        super().__init__(model_adapter, configuration, preload)
+        super().__init__(network_info, configuration)
         self.image_blob_names, self.image_info_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
 
