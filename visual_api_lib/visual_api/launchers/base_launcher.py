@@ -40,12 +40,6 @@ class BaseLauncher(metaclass=abc.ABCMeta):
         '''
 
     @abc.abstractmethod
-    def load_model(self):
-        '''
-        Loads the model on the device.
-        '''
-
-    @abc.abstractmethod
     def get_input_layers(self):
         '''
         Gets the names of model inputs and for each one creates the Metadata structure,
@@ -63,20 +57,6 @@ class BaseLauncher(metaclass=abc.ABCMeta):
            in OpenVINO format, meta (optional)
         Returns:
             - the dict containing Metadata for all outputs
-        '''
-
-    @abc.abstractmethod
-    def reshape_model(self, new_shape):
-        '''
-        Reshapes the model inputs to fit the new input shape.
-        Args:
-            - new_shape (dict): the dictionary with inputs names as keys and
-                list of new shape as values in the following format:
-                {
-                    'input_layer_name_1': [1, 128, 128, 3],
-                    'input_layer_name_2': [1, 128, 128, 3],
-                    ...
-                }
         '''
 
     @abc.abstractmethod
@@ -115,14 +95,13 @@ def get_launcher_by_name(name):
             return launcher
 
 PRETRAINED_FILES_MAP = {
-    "onnx": ["onnx"],
-    "tflite": ["tflite"],
-    "openvino": ["xml"],
-    "pytorch": ["pth", "pt"]
+    "onnx": [".onnx"],
+    "tflite": [".tflite"],
+    "openvino": [".xml"],
+    "pytorch": [".pth", ".pt"]
 }
 
 def create_launcher_by_model_path(model_path: Path):
     for launcher, file_extensions in PRETRAINED_FILES_MAP.items():
         if model_path.suffix in file_extensions:
-            return get_launcher_by_name(launcher)(model_path)
-
+            return get_launcher_by_name(launcher)(str(model_path))

@@ -3,7 +3,7 @@
  Created by Aleksey Korobeynikov
 """
 
-from .base_adapter import BaseLauncher, Metadata
+from .base_launcher import BaseLauncher, Metadata
 from ..common import NetworkInfo
 import tensorflow as tf
 
