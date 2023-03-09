@@ -38,7 +38,7 @@ class ImageModel(Model):
         self.image_blob_names, self.image_info_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
 
-        self.nchw_layout = self.inputs[self.image_blob_name].layout == 'NCHW'
+        self.nchw_layout = self.inputs[self.image_blob_name].shape[1] == 3
         if self.nchw_layout:
             self.n, self.c, self.h, self.w = self.inputs[self.image_blob_name].shape
         else:
@@ -130,4 +130,4 @@ class ImageModel(Model):
             image = image.reshape((1, self.c, self.h, self.w))
         else:
             image = image.reshape((1, self.h, self.w, self.c))
-        return
+        return image

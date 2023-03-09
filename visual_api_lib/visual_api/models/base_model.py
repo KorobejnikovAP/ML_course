@@ -201,7 +201,7 @@ class Model:
         '''
         for name, metadata in self.inputs.items():
             self.logger.info('\tInput layer: {}, shape: {}, precision: {}, layout: {}'.format(
-                name, metadata.shape, metadata.precision, metadata.layout))
+                name, metadata.shape, metadata.type, metadata.layout))
         for name, metadata in self.outputs.items():
             self.logger.info('\tOutput layer: {}, shape: {}, precision: {}, layout: {}'.format(
-                name, metadata.shape, metadata.precision, metadata.layout))
+                name, metadata.shape, metadata.type, metadata.layout))

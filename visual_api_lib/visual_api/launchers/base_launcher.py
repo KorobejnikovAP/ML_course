@@ -6,6 +6,7 @@
 import abc
 from dataclasses import dataclass, field
 from pathlib import Path
+import numpy as np
 from typing import Dict, List, Set
 
 
@@ -15,8 +16,7 @@ class Metadata:
     shape: List[int] = field(default_factory=list)
     index: int = 0
     layout: str = ''
-    precision: str = ''
-    type: str = ''
+    type: np.dtype = np.float32
     meta: Dict = field(default_factory=dict)
 
 
