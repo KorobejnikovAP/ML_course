@@ -7,14 +7,13 @@ import logging as log
 import sys
 from argparse import ArgumentParser, SUPPRESS
 from pathlib import Path
-from time import perf_counter
 
 import cv2
 
 from visual_api.handlers import SyncExecutor
 from visual_api.models import Classification
 import visual_api.launchers as launchers
-from visual_api.common import NetworkInfo, open_images_capture, resolution, PerformanceMetrics
+from visual_api.common import NetworkInfo, open_images_capture
 
 log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.DEBUG, stream=sys.stdout)
 
@@ -27,18 +26,11 @@ def build_argparser():
     args.add_argument('-i', '--input', required=True,
                       help='Required. An input to process. The input must be a single image, '
                            'a folder of images, video file or camera id.')
-    args.add_argument('-d', '--device', default='CPU', type=str,
-                      help='Optional. Specify the target device to infer on; CPU, GPU, HDDL or MYRIAD is '
-                           'acceptable. The demo will look for a suitable plugin for device specified. '
-                           'Default value is CPU.')
 
     common_model_args = parser.add_argument_group('Common model options')
     common_model_args.add_argument('--labels', help='Optional. Labels mapping file.', default=None, type=str)
     common_model_args.add_argument('-topk', help='Optional. Number of top results. Default value is 5. Must be from 1 to 10.', default=5,
                                    type=int, choices=range(1, 11))
-    common_model_args.add_argument('--layout', type=str, default=None,
-                                   help='Optional. Model inputs layouts. '
-                                        'Ex. NCHW or input0:NCHW,input1:NC in case of more than one input.')
 
     io_args = parser.add_argument_group('Input/output options')
     io_args.add_argument('--loop', default=False, action='store_true',
@@ -145,14 +137,11 @@ def main():
 
     # 4 Inference part
     next_frame_id = 0
-    metrics = PerformanceMetrics()
-    render_metrics = PerformanceMetrics()
     video_writer = cv2.VideoWriter()
     ESC_KEY = 27
     key = -1
     while True:
         # Get new image/frame
-        start_time = perf_counter()
         frame = cap.read()
         if frame is None:
             if next_frame_id == 0:
@@ -163,14 +152,11 @@ def main():
                 raise RuntimeError("Can't open video writer")
 
         # Inference current frame
-        classifications, frame_meta = executor.run(frame)
+        classifications, _ = executor.run(frame)
         if args.raw_output_message:
             print_raw_results(classifications, next_frame_id)
-        rendering_start_time = perf_counter()
+
         frame = draw_labels(frame, classifications)
-        # if delay or args.no_show:
-        #     render_metrics.update(rendering_start_time)
-        #     metrics.update(start_time, frame)
         if video_writer.isOpened() and (args.output_limit <= 0 or next_frame_id <= args.output_limit-1):
             video_writer.write(frame)
 
@@ -184,9 +170,6 @@ def main():
 
 
         next_frame_id += 1
-
-    if delay or args.no_show:
-        metrics.log_total()
 
 
 if __name__ == '__main__':
