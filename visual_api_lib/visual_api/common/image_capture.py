@@ -27,7 +27,6 @@ class OpenError(Exception):
 
 
 class ImagesCapture:
-
     def read():
         raise NotImplementedError
 
@@ -38,7 +37,7 @@ class ImagesCapture:
         raise NotImplementedError
 
 
-class ImreadWrapper(ImagesCapture):
+class ImageReader(ImagesCapture):
 
     def __init__(self, input, loop):
         self.loop = loop
@@ -113,7 +112,7 @@ class DirReader(ImagesCapture):
         return 'DIR'
 
 
-class VideoCapWrapper(ImagesCapture):
+class VideoReader(ImagesCapture):
 
     def __init__(self, input, loop):
         self.loop = loop
@@ -143,7 +142,7 @@ class VideoCapWrapper(ImagesCapture):
         return 'VIDEO'
 
 
-class CameraCapWrapper(ImagesCapture):
+class CameraReader(ImagesCapture):
 
     def __init__(self, input, camera_resolution):
         self.reader_metrics = PerformanceMetrics()
@@ -178,13 +177,13 @@ class CameraCapWrapper(ImagesCapture):
 
 def open_images_capture(input, loop, camera_resolution=(1280, 720)):
     errors = {InvalidInput: [], OpenError: []}
-    for reader in (ImreadWrapper, DirReader, VideoCapWrapper):
+    for reader in (ImageReader, DirReader, VideoReader):
         try:
             return reader(input, loop)
         except (InvalidInput, OpenError) as e:
             errors[type(e)].append(e.message)
     try:
-        return CameraCapWrapper(input, camera_resolution)
+        return CameraReader(input, camera_resolution)
     except (InvalidInput, OpenError) as e:
         errors[type(e)].append(e.message)
     if not errors[OpenError]:

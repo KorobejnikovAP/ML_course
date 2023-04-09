@@ -64,6 +64,7 @@ class PerformanceMetrics:
             put_highlighted_text(frame, "FPS: {:.1f}".format(current_fps),
                                  (position[0], position[1]+30), cv2.FONT_HERSHEY_COMPLEX, font_scale, color, thickness)
 
+
     def get_last(self):
         return (self.last_moving_statistic.latency / self.last_moving_statistic.frame_count
                 if self.last_moving_statistic.frame_count != 0
@@ -83,6 +84,13 @@ class PerformanceMetrics:
 
     def get_latency(self):
         return self.get_total()[0] * 1e3
+
+    def get_fps(self):
+        return self.get_total()[1]
+
+    def gel_local_fps(self):
+        frame_count = self.total_statistic.frame_count + self.current_moving_statistic.frame_count
+        return (frame_count / (self.total_statistic.latency + self.current_moving_statistic.latency)) if frame_count != 0 else None
 
     def log_total(self):
         total_latency, total_fps = self.get_total()
