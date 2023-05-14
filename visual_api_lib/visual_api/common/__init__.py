@@ -8,7 +8,7 @@ from .network_info import NetworkInfo
 from .performance_metrics import PerformanceMetrics
 from .resize import RESIZE_TYPES, pad_image
 from .types import NumericalValue, StringValue, DictValue, ListValue, BooleanValue
-from .utils import InputTransform, softmax, resolution
+from .utils import InputTransform, softmax, resolution, Layout
 
 __all__ = [
     "NetworkInfo",
@@ -23,6 +23,7 @@ __all__ = [
     "open_images_capture",
     "PerformanceMetrics",
     "resolution",
+    "Layout",
 
-    "RESIZE_TYPES"
+    "RESIZE_TYPES",
 ]

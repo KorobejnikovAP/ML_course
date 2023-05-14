@@ -6,10 +6,12 @@
 from .base_launcher import BaseLauncher, get_all_launchers, get_launcher_by_name, create_launcher_by_model_path
 from .onnx import ONNXLauncher
 from .tflite import TFLiteLauncher
+from .openvino import OpenVINOLauncher
 
 __all__ = [
     "BaseLauncher",
     "ONNXLauncher",
+    "OpenVINOLauncher",
     "TFLiteLauncher",
     "get_all_launchers",
     "get_launcher_by_name"
