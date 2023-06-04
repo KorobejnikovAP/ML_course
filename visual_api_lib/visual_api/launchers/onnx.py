@@ -19,9 +19,9 @@ MAPPING_TYPES = {
 class ONNXLauncher(BaseLauncher):
     __provider__ = "onnx"
 
-    def __init__(self, model_path):
+    def __init__(self, model_configuration: dict):
         # create InferenceSession and load model
-        self.session = InferenceSession(model_path)
+        self.session = InferenceSession(model_configuration.get("model_path", ""))
         # get info about model
         self.model_info = NetworkInfo(self.get_input_layers(), self.get_output_layers())
 

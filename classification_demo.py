@@ -13,7 +13,7 @@ import cv2
 from visual_api.handlers import SyncExecutor
 from visual_api.models import Classification
 import visual_api.launchers as launchers
-from visual_api.common import NetworkInfo, open_images_capture
+from visual_api.common import NetworkInfo, open_images_capture, read_model_config
 
 log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.DEBUG, stream=sys.stdout)
 
@@ -22,7 +22,7 @@ def build_argparser():
     parser = ArgumentParser(add_help=False)
     args = parser.add_argument_group('Options')
     args.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
-    args.add_argument('-m', '--model', required=True, type=Path, help='Required. Path to an pretrained model')
+    args.add_argument('-c', '--config', required=True, type=Path, help='Required. Path to model config file')
     args.add_argument('-i', '--input', required=True,
                       help='Required. An input to process. The input must be a single image, '
                            'a folder of images, video file or camera id.')
@@ -118,7 +118,9 @@ def main():
     delay = int(cap.get_type() in {'VIDEO', 'CAMERA'})
 
     # 1 create launcher
-    launcher = launchers.create_launcher_by_model_path(args.model)
+    model_configuration = read_model_config(args.config)
+    print(model_configuration)
+    launcher = launchers.create_launcher_by_model_path(model_configuration)
 
     # 2 create model
     config = {

@@ -1,0 +1,16 @@
+#:kivy 2.0
+<MainPageLayout>
+    orientation: "vertical"
+    Image:
+        id: image
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint: 1, 0.1
+        Button:
+            id: play_button
+            text: 'play'
+        Button:
+            text: 'Settings'
+            on_press:
+                #app.manager.current = 'settings'
+                if self.state == 'normal': self.state = 'down'

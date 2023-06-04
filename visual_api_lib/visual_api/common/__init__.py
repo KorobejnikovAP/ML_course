@@ -9,6 +9,7 @@ from .performance_metrics import PerformanceMetrics
 from .resize import RESIZE_TYPES, pad_image
 from .types import NumericalValue, StringValue, DictValue, ListValue, BooleanValue
 from .utils import InputTransform, softmax, resolution, Layout
+from .yaml_reader import read_yaml, read_model_config, prepend_to_path
 
 __all__ = [
     "NetworkInfo",
@@ -24,6 +25,9 @@ __all__ = [
     "PerformanceMetrics",
     "resolution",
     "Layout",
+    "read_yaml",
+    "read_model_config",
+    "prepend_to_path",
 
     "RESIZE_TYPES",
 ]

@@ -36,10 +36,10 @@ MAPPING_TYPES = {
 class OpenVINOLauncher(BaseLauncher):
     __provider__ = "openvino"
 
-    def __init__(self, model_path, weights_path=None):
+    def __init__(self, model_configuration: dict):
         self.core = create_core()
-        self.model_path = model_path
-        self.weights_path = weights_path
+        self.model_path = model_configuration.get("model_path", "")
+        self.weights_path = model_configuration.get("weights_path", "")
         # Set inference parameters
         self.device = "CPU"
         self.max_num_requests = 1

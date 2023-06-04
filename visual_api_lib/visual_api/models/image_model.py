@@ -43,8 +43,19 @@ class ImageModel(Model):
             self.n, self.c, self.h, self.w = self.inputs[self.image_blob_name].shape
         else:
             self.n, self.h, self.w, self.c = self.inputs[self.image_blob_name].shape
-        self.resize = RESIZE_TYPES[self.resize_type]
+        self.resize_func = RESIZE_TYPES[self.resize_type]
         self.input_transform = InputTransform(self.reverse_input_channels, self.mean_values, self.scale_values)
+
+    '''Wrapper for image resize function
+    Args: input image
+    '''
+    def resize(self, image):
+        if (self.w != -1 and self.h != -1):
+            resized_image = self.resize_func(image, (self.w, self.h))
+        else:
+            resized_image = image
+
+        return resized_image
 
     @classmethod
     def parameters(cls):
@@ -108,7 +119,7 @@ class ImageModel(Model):
         '''
         image = inputs
         meta = {'original_shape': image.shape}
-        resized_image = self.resize(image, (self.w, self.h))
+        resized_image = self.resize(image)
         meta.update({'resized_shape': resized_image.shape})
         if self.resize_type == 'fit_to_window':
             resized_image = pad_image(resized_image, (self.w, self.h))
