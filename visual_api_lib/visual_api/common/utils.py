@@ -26,6 +26,9 @@ def softmax(logits, axis=None, keepdims=False):
     exp = np.exp(logits - np.max(logits))
     return exp / np.sum(exp, axis=axis, keepdims=keepdims)
 
+def sigmoid(x):
+  return 1 / (1 + np.exp(-x))
+
 def resolution(value):
     try:
         result = [int(v) for v in value.split('x')]
@@ -93,3 +96,8 @@ class Layout:
         if search_string != "":
             raise ValueError("Can't parse input layout string: " + layout_string)
         return user_layouts
+
+def load_labels(label_file):
+    with open(label_file, 'r') as f:
+        labels_map = [x.strip() for x in f]
+    return labels_map

@@ -52,7 +52,7 @@ def resize_image_letterbox(image, size, interpolation=cv2.INTER_LINEAR):
     return resized_image
 
 
-def crop_resize(image, size):
+def crop_resize(image, size, interpolation=None):
     desired_aspect_ratio = size[1] / size[0] # width / height
     if desired_aspect_ratio == 1:
         if (image.shape[0] > image.shape[1]):

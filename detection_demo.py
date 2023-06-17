@@ -11,10 +11,11 @@ from pathlib import Path
 import cv2
 
 from visual_api.handlers import SyncExecutor
-from visual_api.models import Classification
+from visual_api.models import Detection
 import visual_api.launchers as launchers
+from visual_api.visualizers import ColorPalette
 from visual_api.common import NetworkInfo, open_images_capture, read_model_config
-from visual_api.visualizers import ClassificationVisualizer
+from visual_api.visualizers import DetectionVisualizer
 
 log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.DEBUG, stream=sys.stdout)
 
@@ -30,8 +31,8 @@ def build_argparser():
 
     common_model_args = parser.add_argument_group('Common model options')
     common_model_args.add_argument('--labels', help='Optional. Labels mapping file.', default=None, type=str)
-    common_model_args.add_argument('-topk', help='Optional. Number of top results. Default value is 5. Must be from 1 to 10.', default=5,
-                                   type=int, choices=range(1, 11))
+    common_model_args.add_argument('-t', '--prob_threshold', default=0.5, type=float,
+                                       help='Optional. Probability threshold for detections filtering.')
 
     io_args = parser.add_argument_group('Input/output options')
     io_args.add_argument('--loop', default=False, action='store_true',
@@ -61,26 +62,6 @@ def build_argparser():
     return parser
 
 
-def print_raw_results(classifications, frame_id):
-    label_max_len = 0
-    if classifications:
-        label_max_len = len(max([cl[1] for cl in classifications], key=len))
-
-    log.debug(' ------------------- Frame # {} ------------------ '.format(frame_id))
-
-    if label_max_len != 0:
-        log.debug(' Class ID | {:^{width}s}| Confidence '.format('Label', width=label_max_len))
-    else:
-        log.debug(' Class ID | Confidence ')
-
-    for class_id, class_label, score in classifications:
-        if class_label != "":
-            log.debug('{:^9} | {:^{width}s}| {:^10f} '.format(class_id, class_label, score, width=label_max_len))
-        else:
-            log.debug('{:^9} | {:^10f} '.format(class_id, score))
-
-
-
 def main():
     args = build_argparser().parse_args()
 
@@ -97,19 +78,18 @@ def main():
         'mean_values':  args.mean_values,
         'scale_values': args.scale_values,
         'reverse_input_channels': args.reverse_input_channels,
-        'topk': args.topk,
         'path_to_labels': args.labels
     }
-
     # merge config from cli and from file
     config = {**user_config, **model_configuration}
     print("Result config for start network: ", config)
-    model = Classification(NetworkInfo(launcher.get_input_layers(), launcher.get_output_layers()), config)
+    model = Detection.create_model("yolo-v8", NetworkInfo(launcher.get_input_layers(), launcher.get_output_layers()), config)
     model.log_layers_info()
 
-    # 3 create handler-executor and visualizer
+    # 3 create handler-executor
     executor = SyncExecutor(model, launcher)
-    visualizer = ClassificationVisualizer()
+    palette = ColorPalette(len(model.labels) if model.labels else 100)
+    visualizer = DetectionVisualizer(args.labels, palette)
 
 
     # 4 Inference part
@@ -129,17 +109,17 @@ def main():
                 raise RuntimeError("Can't open video writer")
 
         # Inference current frame
-        classifications, _ = executor.run(frame)
+        detections, _ = executor.run(frame)
         if args.raw_output_message:
-            print_raw_results(classifications, next_frame_id)
+            visualizer.print_raw_results(detections, next_frame_id)
 
-        frame = visualizer.draw_labels(frame, classifications)
+        frame = visualizer.draw_detections(frame, detections)
         if video_writer.isOpened() and (args.output_limit <= 0 or next_frame_id <= args.output_limit-1):
             video_writer.write(frame)
 
         # Visualization
         if not args.no_show:
-            cv2.imshow('Classification Results', frame)
+            cv2.imshow('Detection Results', frame)
             key = cv2.waitKey(delay)
             # Quit.
             if key in {ord('q'), ord('Q'), ESC_KEY}:

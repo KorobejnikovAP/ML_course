@@ -6,9 +6,9 @@
 from .image_capture import open_images_capture
 from .network_info import NetworkInfo
 from .performance_metrics import PerformanceMetrics
-from .resize import RESIZE_TYPES, pad_image
+from .resize import INTERPOLATION_TYPES, RESIZE_TYPES, pad_image
 from .types import NumericalValue, StringValue, DictValue, ListValue, BooleanValue
-from .utils import InputTransform, softmax, resolution, Layout
+from .utils import InputTransform, softmax, sigmoid, resolution, Layout, load_labels
 from .yaml_reader import read_yaml, read_model_config, prepend_to_path
 
 __all__ = [
@@ -19,6 +19,7 @@ __all__ = [
     "BooleanValue",
     "DictValue",
     "InputTransform",
+    "sigmoid",
     "softmax",
     "pad_image",
     "open_images_capture",
@@ -28,6 +29,8 @@ __all__ = [
     "read_yaml",
     "read_model_config",
     "prepend_to_path",
+    "load_labels",
 
     "RESIZE_TYPES",
+    "INTERPOLATION_TYPES"
 ]
