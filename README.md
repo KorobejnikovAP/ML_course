@@ -1,10 +1,10 @@
-# Demo Application using Python Visual API
+# Applications based on Python Visual API
 
 This repo contains:
 
 1. **Visual API package** is a set of wrapper classes for particular tasks and model architectures, simplifying data preprocess and postprocess as well as routine procedures (model loading, synchronous execution, etc...). An application feeds model class with input data, then the model returns postprocessed output data in user-friendly format. More information see [this](./visual_api_lib/README.md).
 
-2. **demo_application.py** - an application that solves one of the following computer vision tasks:
+2. **<task_name>.py** - an application that solves one of the following computer vision tasks:
     * classification
     * object_detection
     * segmentation
@@ -29,17 +29,32 @@ To run `demo_application` next the following steps:
 
 > **NOTE**: For example was created `classification_demo` to solve classification task.
 
-## Task for students
+## Options of demo
 
-### Main task:
+Demos have 2 required options:
 
-Realize demo application to solve `object_detection` task. To do it you should perform next steps:
-* Choose a DL model for your solution.
-* Create model wrapper with pre- and postprocessing operations.
-* Choose launcher for model inference. You can choose available launchers from package (`onnx` or `tflite`) or create new launcher for another framework.
-* Create demo based on updated `visual_api` (which contains new classes needed to solve `object_detection` task)
+```
+  -c CONFIG, --config CONFIG
+                        Required. Path to model config file
+  -i INPUT, --input INPUT
+                        Required. An input to process. The input must be a single image, a folder of images, video
+                        file or camera id.
+```
 
-### (Optional) Additional tasks
+Config file contains info about model weights and some needed info for preprocessing and postprocessing. For example minimum config is:
 
-1. Compare performance of your demo on different launchers(backends). Hint: use `PerformanceMetrics` from common part of visual_api package.
-2. Formalize visualization part as separated class or module (maybe as part of `visual_api`).
+```
+name: yolo-v8
+model_path: yolov8m.xml
+mean_values: [y, y, y]
+scale_values: [x, x, x]
+```
+
+Such config developer should provide for all models in bank of models.
+
+## Tasks and demos
+
+|demos\launchers      | pytorch | onnx | openvino | tflite  |
+|---------------------|---------|------|----------|---------|
+|classification demo  |  Yes    | Yes  |  Yes     |  Yes    |
+|detection_demo       |  Yes    | Yes  |  Yes     |  Yes    |
