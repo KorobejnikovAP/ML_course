@@ -34,3 +34,22 @@ class ClassificationVisualizer:
             put_highlighted_text(frame, label, (frame.shape[1] - label_width, offset_y),
                 cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
         return frame
+
+    @staticmethod
+    def print_raw_results(classifications, frame_id):
+        label_max_len = 0
+        if classifications:
+            label_max_len = len(max([cl[1] for cl in classifications], key=len))
+
+        log.debug(' ------------------- Frame # {} ------------------ '.format(frame_id))
+
+        if label_max_len != 0:
+            log.debug(' Class ID | {:^{width}s}| Confidence '.format('Label', width=label_max_len))
+        else:
+            log.debug(' Class ID | Confidence ')
+
+        for class_id, class_label, score in classifications:
+            if class_label != "":
+                log.debug('{:^9} | {:^{width}s}| {:^10f} '.format(class_id, class_label, score, width=label_max_len))
+            else:
+                log.debug('{:^9} | {:^10f} '.format(class_id, score))

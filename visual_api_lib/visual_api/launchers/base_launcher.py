@@ -79,6 +79,9 @@ class BaseLauncher(metaclass=abc.ABCMeta):
                 }
         '''
 
+    def get_launcher_name(self):
+        return self.__provider__.upper()
+
 def get_all_launchers(cls):
     all_launchers = []
 

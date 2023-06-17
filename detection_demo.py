@@ -10,11 +10,12 @@ from pathlib import Path
 
 import cv2
 
+from time import perf_counter
 from visual_api.handlers import SyncExecutor
 from visual_api.models import Detection
 import visual_api.launchers as launchers
 from visual_api.visualizers import ColorPalette
-from visual_api.common import NetworkInfo, open_images_capture, read_model_config
+from visual_api.common import NetworkInfo, open_images_capture, read_model_config, PerformanceMetrics
 from visual_api.visualizers import DetectionVisualizer
 
 log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.DEBUG, stream=sys.stdout)
@@ -70,7 +71,6 @@ def main():
 
     # 1 create launcher
     model_configuration = read_model_config(args.config)
-    print(model_configuration)
     launcher = launchers.create_launcher_by_model_path(model_configuration)
 
     # 2 create model
@@ -82,7 +82,6 @@ def main():
     }
     # merge config from cli and from file
     config = {**user_config, **model_configuration}
-    print("Result config for start network: ", config)
     model = Detection.create_model("yolo-v8", NetworkInfo(launcher.get_input_layers(), launcher.get_output_layers()), config)
     model.log_layers_info()
 
@@ -97,6 +96,8 @@ def main():
     video_writer = cv2.VideoWriter()
     ESC_KEY = 27
     key = -1
+    # Metrics for inference part
+    performance_metrics = PerformanceMetrics()
     while True:
         # Get new image/frame
         frame = cap.read()
@@ -109,7 +110,9 @@ def main():
                 raise RuntimeError("Can't open video writer")
 
         # Inference current frame
+        start_time = perf_counter()
         detections, _ = executor.run(frame)
+        performance_metrics.update(start_time, frame)
         if args.raw_output_message:
             visualizer.print_raw_results(detections, next_frame_id)
 
@@ -120,7 +123,7 @@ def main():
         # Visualization
         if not args.no_show:
             cv2.imshow('Detection Results', frame)
-            key = cv2.waitKey(delay)
+            key = cv2.waitKey(1)
             # Quit.
             if key in {ord('q'), ord('Q'), ESC_KEY}:
                 break
@@ -128,6 +131,7 @@ def main():
 
         next_frame_id += 1
 
+    performance_metrics.log_total()
 
 if __name__ == '__main__':
     sys.exit(main() or 0)

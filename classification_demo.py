@@ -13,9 +13,10 @@ import cv2
 from visual_api.handlers import SyncExecutor
 from visual_api.models import Classification
 import visual_api.launchers as launchers
-from visual_api.common import NetworkInfo, open_images_capture, read_model_config
+from visual_api.common import NetworkInfo, open_images_capture, read_model_config, PerformanceMetrics
 from visual_api.visualizers import ClassificationVisualizer
 
+from time import perf_counter
 log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.DEBUG, stream=sys.stdout)
 
 
@@ -61,26 +62,6 @@ def build_argparser():
     return parser
 
 
-def print_raw_results(classifications, frame_id):
-    label_max_len = 0
-    if classifications:
-        label_max_len = len(max([cl[1] for cl in classifications], key=len))
-
-    log.debug(' ------------------- Frame # {} ------------------ '.format(frame_id))
-
-    if label_max_len != 0:
-        log.debug(' Class ID | {:^{width}s}| Confidence '.format('Label', width=label_max_len))
-    else:
-        log.debug(' Class ID | Confidence ')
-
-    for class_id, class_label, score in classifications:
-        if class_label != "":
-            log.debug('{:^9} | {:^{width}s}| {:^10f} '.format(class_id, class_label, score, width=label_max_len))
-        else:
-            log.debug('{:^9} | {:^10f} '.format(class_id, score))
-
-
-
 def main():
     args = build_argparser().parse_args()
 
@@ -89,8 +70,8 @@ def main():
 
     # 1 create launcher
     model_configuration = read_model_config(args.config)
-    print(model_configuration)
     launcher = launchers.create_launcher_by_model_path(model_configuration)
+    log.info("Use {}".format(launcher.get_launcher_name()))
 
     # 2 create model
     user_config = {
@@ -103,7 +84,6 @@ def main():
 
     # merge config from cli and from file
     config = {**user_config, **model_configuration}
-    print("Result config for start network: ", config)
     model = Classification(NetworkInfo(launcher.get_input_layers(), launcher.get_output_layers()), config)
     model.log_layers_info()
 
@@ -117,6 +97,8 @@ def main():
     video_writer = cv2.VideoWriter()
     ESC_KEY = 27
     key = -1
+    # Metrics for inference part
+    performance_metrics = PerformanceMetrics()
     while True:
         # Get new image/frame
         frame = cap.read()
@@ -129,9 +111,11 @@ def main():
                 raise RuntimeError("Can't open video writer")
 
         # Inference current frame
+        start_time = perf_counter()
         classifications, _ = executor.run(frame)
         if args.raw_output_message:
-            print_raw_results(classifications, next_frame_id)
+            visualizer.print_raw_results(classifications, next_frame_id)
+        performance_metrics.update(start_time, frame)
 
         frame = visualizer.draw_labels(frame, classifications)
         if video_writer.isOpened() and (args.output_limit <= 0 or next_frame_id <= args.output_limit-1):
@@ -140,13 +124,15 @@ def main():
         # Visualization
         if not args.no_show:
             cv2.imshow('Classification Results', frame)
-            key = cv2.waitKey(delay)
+            key = cv2.waitKey(1)
             # Quit.
             if key in {ord('q'), ord('Q'), ESC_KEY}:
                 break
 
 
         next_frame_id += 1
+
+    performance_metrics.log_total()
 
 
 if __name__ == '__main__':

@@ -170,7 +170,6 @@ class YoloV8(Detection):
 
     def postprocess(self, outputs, meta):
         predictions = outputs[self.output_blob_name]
-        print(type(predictions[0]))
         predictions = cv2.transpose(predictions[0])
 
         scores = np.max(predictions[:, 4:], axis=1)

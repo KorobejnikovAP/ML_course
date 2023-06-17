@@ -34,7 +34,6 @@ class Classification(ImageModel):
     def _get_outputs(self):
         layer_name = next(iter(self.outputs))
         layer_shape = self.outputs[layer_name].shape
-        print(layer_shape)
 
         if layer_shape and len(layer_shape) != 2 and len(layer_shape) != 4:
             self.raise_error('The Classification model wrapper supports topologies only with 2D or 4D output')

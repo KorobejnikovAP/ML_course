@@ -20,18 +20,24 @@ class TFLiteLauncher(BaseLauncher):
     def get_input_layers(self):
         input_info = {}
         for tensor_info in self.interpreter.get_input_details():
-            input_info[tensor_info["name"]] = Metadata(tensor_info["name"], tensor_info["shape"], index=tensor_info["index"])
+            print(tensor_info)
+            input_info[tensor_info["name"]] = Metadata(tensor_info["name"], list(tensor_info["shape"]),
+                                                       index=tensor_info["index"], type=tensor_info["dtype"])
 
         return input_info
 
     def get_output_layers(self):
         output_info = {}
         for tensor_info in self.interpreter.get_output_details():
-            output_info[tensor_info["name"]] = Metadata(tensor_info["name"], tensor_info["shape"], index=tensor_info["index"])
+            output_info[tensor_info["name"]] = Metadata(tensor_info["name"], list(tensor_info["shape"]),
+                                                        index=tensor_info["index"], type=tensor_info["dtype"])
 
         return output_info
 
     def infer_sync(self, dict_data: dict):
+        # convert types of tensors
+        for key, input_tensor in dict_data.items():
+            dict_data[key] = input_tensor.astype(self.model_info.inputs_info[key].type)
         for tensor_name, input_data in dict_data.items():
             self.interpreter.set_tensor(self.model_info.inputs_info[tensor_name].index, input_data)
         self.interpreter.invoke()

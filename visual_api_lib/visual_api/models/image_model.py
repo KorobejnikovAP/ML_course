@@ -1,7 +1,9 @@
 """
- Copyright (c) 2023 ML course
+ Copyright (c) 2023
  Created by Aleksey Korobeynikov
 """
+
+import numpy as np
 
 from .base_model import Model
 from ..common import NetworkInfo, BooleanValue, ListValue, StringValue, RESIZE_TYPES, InputTransform, pad_image, INTERPOLATION_TYPES
@@ -37,8 +39,13 @@ class ImageModel(Model):
         super().__init__(network_info, configuration)
         self.image_blob_names, self.image_info_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
+        self.dynamic = False
 
-        self.nchw_layout = self.inputs[self.image_blob_name].shape[1] == 3
+        if self.inputs[self.image_blob_name].shape[1] == -1:
+            self.dynamic = True
+            self.nchw_layout = self.inputs[self.image_blob_name].layout == 'NCHW'
+        else:
+            self.nchw_layout = self.inputs[self.image_blob_name].shape[1] == 3
         if self.nchw_layout:
             self.n, self.c, self.h, self.w = self.inputs[self.image_blob_name].shape
         else:
@@ -53,6 +60,7 @@ class ImageModel(Model):
         if (self.w != -1 and self.h != -1):
             resized_image = self.resize_func(image, (self.w, self.h), interpolation=INTERPOLATION_TYPES[self.interpolation_type])
         else:
+            # case with dynamic model (for example pytorch models)
             resized_image = image
 
         return resized_image
@@ -142,7 +150,14 @@ class ImageModel(Model):
         '''
         if self.nchw_layout:
             image = image.transpose((2, 0, 1))  # HWC->CHW
-            image = image.reshape((1, self.c, self.h, self.w))
+            if not self.dynamic:
+                image = image.reshape((1, self.c, self.h, self.w))
+            else:
+                image = np.expand_dims(image, 0)
         else:
-            image = image.reshape((1, self.h, self.w, self.c))
+            if not self.dynamic:
+                image = image.reshape((1, self.h, self.w, self.c))
+            else:
+                image = np.expand_dims(image, 0)
+
         return image
