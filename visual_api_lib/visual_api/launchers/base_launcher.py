@@ -33,7 +33,7 @@ class BaseLauncher(metaclass=abc.ABCMeta):
     __provider__ = "base"
 
     @abc.abstractmethod
-    def __init__(self):
+    def __init__(self, model_configuration: dict):
         '''
         An abstract Base Launcher constructor.
         Reads the model from disk or other place.
@@ -101,7 +101,9 @@ PRETRAINED_FILES_MAP = {
     "pytorch": [".pth", ".pt"]
 }
 
-def create_launcher_by_model_path(model_path: Path):
+def create_launcher_by_model_path(model_configuration: dict):
+    model_path = Path(model_configuration.get("model_path", ""))
     for launcher, file_extensions in PRETRAINED_FILES_MAP.items():
         if model_path.suffix in file_extensions:
-            return get_launcher_by_name(launcher)(str(model_path))
+            print(get_launcher_by_name(launcher))
+            return get_launcher_by_name(launcher)(model_configuration)

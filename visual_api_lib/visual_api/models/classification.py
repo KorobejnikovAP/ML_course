@@ -11,7 +11,7 @@ from .image_model import ImageModel
 
 
 class Classification(ImageModel):
-    __model__ = 'Classification'
+    __model__ = 'classification'
 
     def __init__(self, network_info, configuration=None):
         super().__init__(network_info, configuration)
@@ -34,8 +34,9 @@ class Classification(ImageModel):
     def _get_outputs(self):
         layer_name = next(iter(self.outputs))
         layer_shape = self.outputs[layer_name].shape
+        print(layer_shape)
 
-        if len(layer_shape) != 2 and len(layer_shape) != 4:
+        if layer_shape and len(layer_shape) != 2 and len(layer_shape) != 4:
             self.raise_error('The Classification model wrapper supports topologies only with 2D or 4D output')
         if len(layer_shape) == 4 and (layer_shape[2] != 1 or layer_shape[3] != 1):
             self.raise_error('The Classification model wrapper supports topologies only with 4D '

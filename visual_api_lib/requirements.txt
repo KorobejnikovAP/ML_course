@@ -2,5 +2,10 @@ numpy>=1.16.6,<=1.23.1
 opencv-python
 scipy>=1.5.4,<1.9.0
 onnxruntime
-tensorflow
-protobuf==3.19
+tensorflow>=1.15.5,<2.13.0
+onnx>=1.13
+torch>=1.8.1,<=1.13.1
+torchvision>=0.9.1,<=0.14.0
+openvino-dev
+pyyaml
+pytest

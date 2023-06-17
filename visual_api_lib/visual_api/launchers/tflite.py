@@ -10,9 +10,9 @@ import tensorflow as tf
 
 class TFLiteLauncher(BaseLauncher):
     __provider__ = "tflite"
-    def __init__(self, model_path):
+    def __init__(self, model_configuration):
         # Load TFLite model and allocate tensors.
-        self.interpreter = tf.lite.Interpreter(model_path)
+        self.interpreter = tf.lite.Interpreter(model_configuration.get("model_path", ""))
         self.interpreter.allocate_tensors()
         # get info about model
         self.model_info = NetworkInfo(self.get_input_layers(), self.get_output_layers())
